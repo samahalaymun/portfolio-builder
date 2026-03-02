@@ -6,7 +6,7 @@ import { Sparkles } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { generateSummary } from "../../api/generateSummary";
 import { Spinner } from "@/components/ui/spinner";
-import ErrorAlert from "../form/ErrorAlert";
+import ErrorAlert from "@/components/shared/ErrorAlert";
 
 function SummarySection() {
   const {
@@ -18,10 +18,10 @@ function SummarySection() {
   const [loading, setLoading] = useState(false);
 
   const profile = watch();
-  
+
   async function handleGenerate() {
     console.log("genarate");
-    
+
     setLoading(true);
     try {
       const summary = await generateSummary({
@@ -50,7 +50,7 @@ function SummarySection() {
         {watch("summary")?.length || 0} / 160 characters
       </p>
       {errors?.summary?.message && (
-        <ErrorAlert error={String(errors?.summary?.message)}/>
+        <ErrorAlert error={String(errors?.summary?.message)} />
       )}
 
       <div className="flex md:justify-end">

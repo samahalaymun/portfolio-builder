@@ -1,4 +1,6 @@
-function Logo({ title }: { title: string }) {
+import { cn } from "@/lib/utils";
+
+function Logo({ title, className }: { title: string; className?:string; }) {
   const initials = title ? getInitials(title) : "ME";
   function getInitials(name: string) {
     return name
@@ -13,7 +15,7 @@ function Logo({ title }: { title: string }) {
       <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
         {initials}
       </div>
-      <span className="font-semibold tracking-wide">
+      <span className={cn("tracking-wide",className)}>
         {title || "Your Name"}
       </span>
     </div>

@@ -2,7 +2,6 @@ import Features from "@/features/home/components/Features";
 import FinalCTA from "@/features/home/components/FinalCTA";
 import HeroSection from "@/features/home/components/HeroSection";
 import HowItWorks from "@/features/home/components/HowItWorks";
-import Pricing from "@/features/home/components/Pricing";
 import ThemesPreview from "@/features/home/components/ThemesPreview";
 
 function HomePage() {
@@ -12,7 +11,6 @@ function HomePage() {
       <HowItWorks />
       <ThemesPreview />
       <Features />
-      <Pricing/>
       <FinalCTA />
 
     </main>

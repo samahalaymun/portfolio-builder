@@ -2,14 +2,22 @@ import type { theme } from "@/types";
 import { Button } from "../../../components/ui/button";
 import { useTheme } from "next-themes";
 import { cn } from "@/lib/utils";
-import type { BuilderTheme } from "../store/builder.store";
- type themeCardProp = {
-   theme: theme;
-   setTheme:(theme: Partial<BuilderTheme>)=>void;
-   active?:boolean;
- };
-function ThemeCard({ theme, setTheme,active }: themeCardProp) {
-    const {theme:themeMode } = useTheme();
+import { Spinner } from "@/components/ui/spinner";
+type themeCardProp = {
+  theme: theme;
+  setTheme: (theme: string) => void;
+  active?: boolean;
+  isLoading?: boolean;
+  disabled?:boolean;
+};
+function ThemeCard({
+  theme,
+  setTheme,
+  active,
+  isLoading,
+  disabled,
+}: themeCardProp) {
+  const { theme: themeMode } = useTheme();
 
   return (
     <div
@@ -33,7 +41,12 @@ function ThemeCard({ theme, setTheme,active }: themeCardProp) {
           <div className="w-8 h-8 rounded-lg border border-muted bg-border" />
         </div>
 
-        <Button className="mt-4 w-full" onClick={() => setTheme({id:theme.id})}>
+        <Button
+          disabled={disabled}
+          className="mt-4 w-full flex gap-2"
+          onClick={() => setTheme(theme.id)}
+        >
+          {isLoading && <Spinner />}
           Use this theme
         </Button>
       </div>
@@ -41,4 +54,4 @@ function ThemeCard({ theme, setTheme,active }: themeCardProp) {
   );
 }
 
-export default ThemeCard
+export default ThemeCard;

@@ -1,37 +1,152 @@
 import { createBrowserRouter } from "react-router-dom";
+import { lazy, Suspense } from "react";
+
 import PageContainer from "@/layouts/PageContainer";
-import AppLayout from "@/layouts/AppLayout";
 import ErrorPage from "@/pages/ErrorPage";
 import HomePage from "@/pages/homePage";
 import AboutPage from "@/pages/aboutPage";
 import BuilderLayout from "@/features/builder/layout/BuilderLayout";
-import StartPage from "@/features/builder/pages/StartPage";
-import ThemePage from "@/features/builder/pages/ThemePage";
-import ContentPage from "@/features/builder/pages/ContentPage";
-import PreviewPage from "@/features/builder/pages/PreviewPage";
-import ExportPage from "@/features/builder/pages/ExportPage";
-import PortfolioRoot from "@/features/builder/preview/PortfolioRoot";
-import ProtectedPreview from "@/features/builder/pages/ProtectedPreview";
 import ContactPage from "@/pages/contactPage";
-import LoginPage from "@/pages/loginPage";
-import RegisterPage from "@/pages/registerPage";
-import AuthContainer from "@/features/authintication/layout/authContainer";
+import AuthContainer from "@/features/authentication/layout/authContainer";
+import { RequireAuth } from "@/pages/RequireAuth";
+import { GuestOnly } from "@/pages/ProtectAuthPages";
+import PublicLayout from "@/layouts/PublicLayout";
+import PublicPortfolioPage from "@/features/public/pages/PublicPortfolioPage";
+import { PageLoadingSpinner } from "@/components/shared/PageLoadingSpinner";
 
+// ==================== LAZY LOADED (Builder Pages) ====================
+const StartPage = lazy(() => import("@/features/builder/pages/StartPage"));
+const ThemePage = lazy(() => import("@/features/builder/pages/ThemePage"));
+const ContentPage = lazy(() => import("@/features/builder/pages/ContentPage"));
+const TemplatesPage = lazy(
+  () => import("@/features/builder/pages/TemplatesPage"),
+);
+const PreviewPage = lazy(() => import("@/features/builder/pages/PreviewPage"));
+const ExportPage = lazy(() => import("@/features/builder/pages/ExportPage"));
+const TemplateRenderer = lazy(
+  () => import("@/features/builder/templates/TemplateRenderer"),
+);
+
+// ==================== LAZY LOADED (Auth Pages) ====================
+const LoginPage = lazy(() => import("@/pages/loginPage"));
+const RegisterPage = lazy(() => import("@/pages/registerPage"));
+const ForgotPasswordPage = lazy(() => import("@/pages/forgotPasswordPage"));
+const ResetPasswordPage = lazy(() => import("@/pages/resetPasswordPage"));
+
+// ==================== LAZY LOADED (Settings Pages) ====================
+const UserDetailsPage = lazy(
+  () => import("@/features/builder/settings/pages/UserDetailsPage"),
+);
 
 export const router = createBrowserRouter([
+  // Builder Pages - Only for authenticated users
   {
-    element: <AppLayout />,
+    path: "builder",
+    element: (
+      <RequireAuth>
+        <BuilderLayout />
+      </RequireAuth>
+    ),
     errorElement: <ErrorPage />,
     children: [
-      // Public Pages
       {
-        element: <AuthContainer />,
-        children: [
-          { path: "login", element: <LoginPage /> },
-          { path: "signup", element: <RegisterPage /> },
-
-        ],
+        path: "start",
+        element: (
+          <Suspense fallback={<PageLoadingSpinner />}>
+            <StartPage />
+          </Suspense>
+        ),
       },
+      {
+        path: "theme",
+        element: (
+          <Suspense fallback={<PageLoadingSpinner />}>
+            <ThemePage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "content",
+        element: (
+          <Suspense fallback={<PageLoadingSpinner />}>
+            <ContentPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "templates",
+        element: (
+          <Suspense fallback={<PageLoadingSpinner />}>
+            <TemplatesPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "preview",
+        element: (
+          <Suspense fallback={<PageLoadingSpinner />}>
+            <PreviewPage />
+          </Suspense>
+        ),
+      },
+      {
+        path: "export",
+        element: (
+          <Suspense fallback={<PageLoadingSpinner />}>
+            <ExportPage />
+          </Suspense>
+        ),
+      },
+    ],
+  },
+  //Authentication pages
+  {
+    element: <AuthContainer />,
+    errorElement: <ErrorPage />,
+    children: [
+      {
+        path: "login",
+        element: (
+          <GuestOnly>
+            <Suspense fallback={<PageLoadingSpinner />}>
+              <LoginPage />
+            </Suspense>
+          </GuestOnly>
+        ),
+      },
+      {
+        path: "signup",
+        element: (
+          <GuestOnly>
+            <Suspense fallback={<PageLoadingSpinner />}>
+              <RegisterPage />
+            </Suspense>
+          </GuestOnly>
+        ),
+      },
+      {
+        path: "forgot-password",
+        element: (
+          <GuestOnly>
+            <ForgotPasswordPage />
+          </GuestOnly>
+        ),
+      },
+      {
+        path: "reset-password",
+        element: (
+          <GuestOnly>
+            <ResetPasswordPage />
+          </GuestOnly>
+        ),
+      },
+    ],
+  },
+  // Public Pages - Only for non-authenticated users
+  {
+    element: <PublicLayout />,
+    errorElement: <ErrorPage />,
+    children: [
       {
         element: <PageContainer />,
         children: [
@@ -42,28 +157,34 @@ export const router = createBrowserRouter([
       },
     ],
   },
-  // Builder Pages
+  //Setting pages
   {
-    path: "builder",
-    element: <BuilderLayout />,
+    path: "settings",
+    element: (
+      <RequireAuth>
+        <BuilderLayout />
+      </RequireAuth>
+    ),
+    errorElement: <ErrorPage />,
     children: [
-      { index: true, element: <StartPage /> },
-      { path: "start", element: <StartPage /> },
-      { path: "theme", element: <ThemePage /> },
-      { path: "content", element: <ContentPage /> },
       {
-        path: "preview",
+        path: "user-details",
         element: (
-          <ProtectedPreview>
-            <PreviewPage />
-          </ProtectedPreview>
+          <Suspense fallback={<PageLoadingSpinner />}>
+            <UserDetailsPage />
+          </Suspense>
         ),
       },
-      { path: "export", element: <ExportPage /> },
     ],
   },
   {
     path: "preview-frame",
-    element: <PortfolioRoot />,
+    element: <TemplateRenderer />,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: ":username",
+    element: <PublicPortfolioPage />,
+    errorElement: <ErrorPage />,
   },
 ]);

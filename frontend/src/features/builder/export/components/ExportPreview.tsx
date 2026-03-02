@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 
 function ExportPreview() {
   return (
-    <div className="rounded-xl border p-8">
+    <div className="rounded-sm border p-8 bg-background">
       <h3 className="text-lg font-semibold mb-2">Preview your portfolio</h3>
       <p className="text-sm text-muted-foreground mb-6">
         See how your portfolio looks before exporting.

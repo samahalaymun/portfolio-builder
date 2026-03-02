@@ -1,69 +1,111 @@
+// Footer.tsx
 import { GitHubIcon } from "@/layouts/SocialIcons/GithubIcon";
 import { LinkedInIcon } from "@/layouts/SocialIcons/LinkedInIcon";
 import { TwitterIcon } from "@/layouts/SocialIcons/TwitterIcon";
+import type { NavItem } from "../../types";
+import { useTemplateConfig } from "../../templates/config";
+import { cn } from "@/lib/utils";
 
-type footerProps = {
-  firstname: string;
-  lastname: string;
-  socials: { github?: string; linkedin?: string; twitter?: string };
-  role:string;
+type FooterProps = {
+  firstname?: string;
+  lastname?: string;
+  socials?: { github?: string; linkedin?: string; twitter?: string };
+  role?: string;
+  navLinks: NavItem[];
+  variant?: string;
 };
-function Footer({ firstname, lastname, socials,role }: footerProps) {
+
+function Footer({
+  firstname,
+  lastname,
+  socials,
+  role,
+  navLinks,
+  variant = "default",
+}: FooterProps) {
+  const fullName = [firstname, lastname].filter(Boolean).join(" ");
+ const {config,isLoading} = useTemplateConfig(variant);
+ const footerConfig = config?.footer;
+
+ // ✅ No footer for minimal template
+ if (!footerConfig?.show || !config || isLoading) {
+   return null;
+ }
   return (
-    <footer className="border-t bg-muted  text-muted-foreground py-8 flex flex-col gap-8 lg:space-y-4">
-      <div className="flex justify-between flex-col lg:flex-row gap-8  px-4 lg:px-10">
-        <div>
-          <h3 className="text-muted-foreground font-semibold">
-            {firstname + " " + lastname}
-          </h3>
-          <small className="text-muted-foreground">{role}</small>
+    <footer className={footerConfig.background}>
+      <div className={cn(footerConfig.container, footerConfig.padding)}>
+        <div className={footerConfig.contentLayout}>
+          {/* Identity */}
+          {footerConfig.showIdentity && (
+            <div className={footerConfig.identityClass}>
+              {fullName && (
+                <h3 className={footerConfig.nameClass}>{fullName}</h3>
+              )}
+              {role && <p className={footerConfig.roleClass}>{role}</p>}
+            </div>
+          )}
+
+          {/* Nav */}
+          {footerConfig.showNav && (
+            <div className={footerConfig.navLayout}>
+              {navLinks.map((link) => (
+                <a
+                  key={link.id}
+                  href={link.href}
+                  className={footerConfig.navLinkClass}
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
+          )}
+
+          {/* Socials */}
+          {footerConfig.showSocials && socials && (
+            <div className={footerConfig.socialsLayout}>
+              {socials.twitter && (
+                <a
+                  href={socials.twitter}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Twitter"
+                  className={footerConfig.socialLinkClass}
+                >
+                  <TwitterIcon fill="currentColor" />
+                </a>
+              )}
+              {socials.github && (
+                <a
+                  href={socials.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="GitHub"
+                  className={footerConfig.socialLinkClass}
+                >
+                  <GitHubIcon fill="currentColor" />
+                </a>
+              )}
+              {socials.linkedin && (
+                <a
+                  href={socials.linkedin}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="LinkedIn"
+                  className={footerConfig.socialLinkClass}
+                >
+                  <LinkedInIcon fill="currentColor" />
+                </a>
+              )}
+            </div>
+          )}
         </div>
-        <div className="flex gap-6 flex-col lg:flex-row">
-          <a
-            href="#about"
-            className=" hover:text-primary text-muted-foreground transform ease-in duration-100 transition-colors"
-          >
-            About
-          </a>
-          <a
-            href="#projects"
-            className=" hover:text-primary text-muted-foreground transform ease-in duration-100 transition-colors"
-          >
-            Projects
-          </a>
-          <a
-            href="#contact"
-            className=" hover:text-primary text-muted-foreground transform ease-in duration-100 transition-colors"
-          >
-            Contact
-          </a>
-        </div>
-        <div className="flex gap-6 flex-col lg:flex-row">
-          <a
-            href={socials?.twitter}
-            target="_blank"
-            className="text-primary transition-colors hover:text-primary/70"
-          >
-            <TwitterIcon fill="currentColor" />
-          </a>
-          <a
-            href={socials?.github}
-            target="_blank"
-            className="text-primary transition-colors hover:text-primary/70"
-          >
-            <GitHubIcon fill="currentColor" />
-          </a>
-          <a
-            href={socials?.linkedin}
-            target="_blank"
-            className="text-primary transition-colors hover:text-primary/70"
-          >
-            <LinkedInIcon fill="currentColor" />
-          </a>
-        </div>
-      </div>
-      <div className=" px-4 lg:px-10   lg:text-center text-sm ">
-        © {new Date().getFullYear()} Built with Portify
+
+        {/* Bottom bar */}
+        {footerConfig.showBottomBar && (
+          <div className={footerConfig.bottomBarClass}>
+            © {new Date().getFullYear()} Built with Portify
+          </div>
+        )}
       </div>
     </footer>
   );

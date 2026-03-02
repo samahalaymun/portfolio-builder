@@ -1,0 +1,35 @@
+<!-- portify-favicon.svg -->
+<!-- Ultra-simple version optimized for 16x16 and 32x32 favicon sizes -->
+
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="32" height="32" rx="6" fill="url(#bg)" />
+  
+  <!-- Simplified 3-layer portfolio icon -->
+  <!-- Layer 3 -->
+  <rect x="9" y="14" width="14" height="10" rx="1.5" fill="#000" opacity="0.15" transform="translate(1, 1)" />
+  
+  <!-- Layer 2 -->
+  <rect x="9" y="14" width="14" height="10" rx="1.5" fill="#000" opacity="0.25" transform="translate(0.5, 0.5)" />
+  
+  <!-- Layer 1 (main) -->
+  <rect x="9" y="14" width="14" height="10" rx="1.5" fill="url(#layer)" />
+  
+  <!-- Simple stack icon -->
+  <g stroke="#fff" stroke-width="1.5" stroke-linecap="round">
+    <line x1="16" y1="17" x2="16" y2="21" />
+    <line x1="12" y1="19" x2="20" y2="19" />
+  </g>
+  
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#6366f1"/>
+      <stop offset="1" stop-color="#8b5cf6"/>
+    </linearGradient>
+    
+    <linearGradient id="layer" x1="9" y1="14" x2="23" y2="24" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#818cf8"/>
+      <stop offset="1" stop-color="#a78bfa"/>
+    </linearGradient>
+  </defs>
+</svg>

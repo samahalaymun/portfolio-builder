@@ -1,11 +1,12 @@
 import { CalendarDays } from "lucide-react";
-import type { Experience as ExperienceType } from "../../store/builder.store";
 import Container from "../layout/Container";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Animated } from "@/components/ui/animated";
+import type { Experience as ExperienceType } from "../../types";
 
-function Experience({ experiences }: { experiences: ExperienceType[] }) {
-  return (
+function Experience({ profile }: any) {
+  const experiences: ExperienceType[] = profile?.experience ?? [];
+    return (
     <Container id="experience">
       <Animated variant="flip" delay={80}>
         <h2 className="md:text-2xl text-xl  text-foreground font-semibold text-center">
@@ -55,23 +56,23 @@ function Experience({ experiences }: { experiences: ExperienceType[] }) {
         {/* Content */}
         <div className="flex-1">
           {experiences.map((exp) => (
-            <TabsContent key={exp.company} value={exp.company} className="mt-0">
+            <TabsContent key={exp?.company} value={exp?.company} className="mt-0">
               <Animated variant="flip">
                 <div className="space-y-4">
                   <div>
-                    <h3 className="text-lg font-semibold">{exp.role}</h3>
-                    <p className="text-muted-foreground">{exp.company}</p>
+                    <h3 className="text-lg font-semibold">{exp?.role}</h3>
+                    <p className="text-muted-foreground">{exp?.company}</p>
                   </div>
 
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <CalendarDays className="w-4 h-4" />
                     <span>
-                      {exp.startDate} – {exp.endDate || "Present"}
+                      {exp?.startDate} – {exp?.endDate || "Present"}
                     </span>
                   </div>
 
                   <p className="text-sm leading-relaxed text-muted-foreground">
-                    {exp.description}
+                    {exp?.description}
                   </p>
                 </div>
               </Animated>

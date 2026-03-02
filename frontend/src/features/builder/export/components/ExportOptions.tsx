@@ -1,13 +1,11 @@
 import { Button } from "@/components/ui/button";
-import { useBuilderStore } from "../../store/builder.store";
 import { downloadBlob, downloadJSON } from "@/lib/utils";
 import { exportPortfolio } from "../renderer/exportZip";
 
 function ExportOptions() {
-  const { profile } = useBuilderStore();
   
   return (
-    <div className="rounded-xl border p-8 bg-muted/30">
+    <div className="rounded-sm border p-8 bg-background">
       <h3 className="text-lg font-semibold mb-2">Export options</h3>
       <p className="text-sm text-muted-foreground mb-6">
         Download your portfolio and host it anywhere.
@@ -16,14 +14,14 @@ function ExportOptions() {
       <div className="flex gap-4 flex-wrap">
         <Button
           onClick={async () => {
-            const blob = await exportPortfolio(profile);
-            downloadBlob(blob, "portfolio-export.zip");
+            //const blob = await exportPortfolio(profile);
+            //downloadBlob(blob, "portfolio-export.zip");
           }}
         >
           Export as HTML
         </Button>
 
-        <Button variant="outline" onClick={() => downloadJSON(profile)}>
+        <Button variant="outline" >
           Download JSON data
         </Button>
 

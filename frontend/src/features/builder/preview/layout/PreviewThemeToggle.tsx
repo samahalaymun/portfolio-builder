@@ -3,17 +3,23 @@ import { Separator } from "@/components/ui/separator";
 import { cn, resolveTheme } from "@/lib/utils";
 
 import { Laptop, Moon, Sun } from "lucide-react";
-import { useBuilderStore } from "../../store/builder.store";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useThemeStore } from "../../store/builder.store";
 
-function PreviewThemeToggle({ className }: { className?: string }) {
-  const { profile, setTheme } = useBuilderStore();
-  const resolved = resolveTheme(profile.theme.mode);
+function PreviewThemeToggle({
+  className,
+  themeId,
+}: {
+  className?: string;
+  themeId:string;
+}) {
+  const { themeMode, setThemeMode } = useThemeStore((s) => s);
+  const resolved = resolveTheme(themeMode);
 
   return (
     <DropdownMenu>
@@ -48,16 +54,16 @@ function PreviewThemeToggle({ className }: { className?: string }) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        data-theme={profile.theme.id}
+        data-theme={themeId}
         className={cn(resolved)}
         align="end"
       >
         <DropdownMenuItem
           className={cn(
             "flex cursor-pointer items-center gap-2",
-            profile.theme.mode === "light" && "font-medium text-primary",
+            themeMode === "light" && "font-medium text-primary",
           )}
-          onClick={() => setTheme({ mode: "light" })}
+          onClick={() => setThemeMode("light")}
         >
           <Sun size={15} />
           Light
@@ -66,9 +72,9 @@ function PreviewThemeToggle({ className }: { className?: string }) {
         <DropdownMenuItem
           className={cn(
             "flex cursor-pointer items-center gap-2",
-            profile.theme.mode === "dark" && "font-medium text-primary",
+            themeMode === "dark" && "font-medium text-primary",
           )}
-          onClick={() => setTheme({ mode: "dark" })}
+          onClick={() => setThemeMode("dark")}
         >
           <Moon size={15} />
           Dark
@@ -77,10 +83,10 @@ function PreviewThemeToggle({ className }: { className?: string }) {
         <DropdownMenuItem
           className={cn(
             "flex cursor-pointer items-center gap-2",
-            (profile.theme.mode === "system" || !profile.theme.mode) &&
+            (themeMode === "system" || !themeMode) &&
               "font-medium text-primary",
           )}
-          onClick={() => setTheme({ mode: "system" })}
+          onClick={() => setThemeMode("system")}
         >
           <Laptop size={15} />
           System

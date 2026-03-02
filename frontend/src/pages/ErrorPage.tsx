@@ -11,7 +11,11 @@ function ErrorPage() {
   let message = "The page you are looking for doesn't exist or has been moved.";
 
   // Detect network/axios offline errors and show friendly offline message
-  const errObj = error as any;
+  const errObj = error as Error & {
+    code?: string;
+    request?: unknown;
+    response?: unknown;
+  };
   const isNavigatorOffline =
     typeof navigator !== "undefined" && !navigator.onLine;
   const isAxiosNetworkError =
@@ -93,7 +97,7 @@ function ErrorPage() {
       <footer>
         <div className="py-6.25 bg-secondary  px-4 lg:px-10">
           <h6 className="font-bold text-secondary-foreground lg:text-start text-center">
-            Made With Love By Finland All Right Reserved
+            © {new Date().getFullYear()} Portify All rights reserved.
           </h6>
         </div>
       </footer>

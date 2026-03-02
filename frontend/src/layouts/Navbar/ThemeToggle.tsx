@@ -19,7 +19,7 @@ const Item = ({
       onClick={() => setTheme(value)}
       className={cn(
         `
-            relative flex h-8 w-8 items-center justify-center
+            relative flex h-6 w-6 items-center justify-center
             rounded-full transition-all
           `,
         isActive
@@ -37,14 +37,14 @@ const Item = ({
       className={cn(
         `
           inline-flex items-center gap-1 rounded-full
-          border bg-muted p-1
+          border bg-muted p-0.5 shadow-xs
         `,
         className,
       )}
     >
-      <Item value="system" label="System" icon={<Laptop size={16} />} />
-      <Item value="light" label="Light" icon={<Sun size={16} />} />
-      <Item value="dark" label="Dark" icon={<Moon size={16} />} />
+      <Item value="system" label="System" icon={<Laptop size={14} />} />
+      <Item value="light" label="Light" icon={<Sun size={14} />} />
+      <Item value="dark" label="Dark" icon={<Moon size={14} />} />
     </div>
   );
 }

@@ -1,10 +1,23 @@
-import { useBuilderStore } from '../store/builder.store';
+import { api } from '@/lib/axios';
+import { useQuery } from '@tanstack/react-query';
 import { Navigate } from 'react-router-dom';
 
 function ProtectedPreview({ children }: { children: React.ReactNode }) {
-  const profile = useBuilderStore((s) => s.profile);
+  const { data: portfolio, isFetching } = useQuery({
+    queryKey: ["portfolio-profile"],
+    queryFn: async () => {
+      const res = await api.get("/portfolios/me");
+      return res.data;
+    },
+  });
 
-  if (!profile.firstname || !profile.email || !profile.summary) {
+  const personalInfo = portfolio?.content.personalInfo;
+
+  if (
+    !personalInfo?.firstname ||
+    !personalInfo?.email ||
+    !personalInfo?.summary
+  ) {
     return <Navigate to="/builder/content" replace />;
   }
 

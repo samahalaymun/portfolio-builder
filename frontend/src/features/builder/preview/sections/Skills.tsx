@@ -1,26 +1,66 @@
 import { Animated } from "@/components/ui/animated";
 import Container from "../layout/Container";
+import type { PortfolioContent } from "../../types";
+import { Check } from "lucide-react";
+import { cn } from "@/lib/utils";
+import {
+  useTemplateConfig,
+} from "../../templates/config";
+interface SkillsProps {
+  profile: PortfolioContent;
+  variant?: string;
+  id: string;
+}
+function Skills({ profile, id, variant = "default" }: SkillsProps) {
+  const skills: string[] = profile?.skills ?? [];
+  const { config, isLoading } = useTemplateConfig(variant);
+  const skillsConfig = config?.skills;
 
-function Skills({ skills }: { skills: string[] }) {
+  if (!skills.length || !config || isLoading || !skillsConfig) return null;
+
   return (
-    <Container id="skills">
-      <Animated variant="flip" delay={80}>
-        <h2 className="md:text-2xl text-xl text-foreground font-semibold  text-center">
-          Skills
-        </h2>
+    <Container id={id} variant={variant}>
+      {/* Section heading */}
+      <Animated variant="flip">
+        <div
+          className={cn(
+            "flex flex-col gap-2 mb-14",
+            skillsConfig.headingAlign === "center"
+              ? "items-center text-center"
+              : "items-start",
+          )}
+        >
+          <span className={skillsConfig.badge}>What I work with</span>
+          <h2 className={skillsConfig.title}>Skills</h2>
+          <p className={skillsConfig.subtitle}>
+            Technologies and tools I use to bring ideas to life
+          </p>
+          <div className="w-12 h-1 bg-primary rounded-full mt-1" />
+        </div>
       </Animated>
-      <Animated variant="flip" delay={160}>
-        <p className="text-muted-foreground mb-4 text-center">Here what i do</p>
-      </Animated>
-      <div className="flex justify-center flex-wrap gap-x-2 gap-y-4">
+
+      {/* Skills grid */}
+      <div className={skillsConfig.grid}>
         {skills.map((skill, index) => (
-          <Animated className="h-auto  w-auto" delay={index * 80 + 160}>
-            <span
-              key={skill}
-              className="rounded-full font-semibold border px-3 py-2 text-sm bg-muted text-muted-foreground shadow-sm"
-            >
-              {skill}
-            </span>
+          <Animated key={skill} variant="scale" delay={index * 40}>
+            <div className={skillsConfig.itemClass}>
+              {/* ✅ Shine effect (modern template) */}
+              {skillsConfig.showShine && (
+                <div className={skillsConfig.shineClass} />
+              )}
+
+              {/* ✅ Bullet/Icon (conditional) */}
+              {skillsConfig.showBullet && (
+                <span className={skillsConfig.bulletClass}>
+                  {skillsConfig.bulletIcon ? (
+                    <Check className="w-3 h-3 text-primary" />
+                  ) : null}
+                </span>
+              )}
+
+              {/* ✅ Skill text */}
+              <span className={skillsConfig.textClass}>{skill}</span>
+            </div>
           </Animated>
         ))}
       </div>

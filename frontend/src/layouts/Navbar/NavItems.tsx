@@ -4,8 +4,8 @@ import {  Link, useLocation } from "react-router-dom";
 
 const NAV_ITEMS = [
   { label: "Features", href: "#features" },
-  { label: "Themes", href: "#themes" },
   { label: "How it works", href: "#how-it-works" },
+  { label: "Themes", href: "#themes" },
 ];
 function NavItems({ className, stacked ,onClick}: NavItemsProps) {
   

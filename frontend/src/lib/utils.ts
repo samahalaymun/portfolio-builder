@@ -1,40 +1,16 @@
-import { CONTENT_STEPS } from "@/data/constants";
-import type { ContentFormValues } from "@/features/builder/schema";
-import type { BuilderProfile } from "@/features/builder/store/builder.store";
 import { clsx, type ClassValue } from "clsx";
 import fs from "fs";
 import path from "path";
 import { twMerge } from "tailwind-merge";
-
+import {
+  format,
+  formatDistanceToNow,
+  differenceInMinutes,
+  differenceInHours,
+  differenceInDays,
+} from "date-fns";
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
-}
-export function mapFormToProfile(
-  values: ContentFormValues,
-): Partial<BuilderProfile> {
-  return {
-    firstname: values.firstname,
-    lastname: values.lastname,
-    email: values.email,
-    phone: values.phone,
-    cvUrl: values.cvUrl,
-    role: values.role,
-    location: values.location,
-    images: values.images,
-    summary: values.summary,
-    about: values.about,
-    skills: values.skills,
-    projects: values.projects.map((p) => ({
-      title: p.title,
-      description: p.description ?? "",
-      sourceCode: p.sourceCode,
-      liveDemo: p.liveDemo,
-      technologies: p.technologies ?? [],
-      image: p.image ?? "",
-    })),
-    experience: values.experience ?? [],
-    socials: values.socials ?? {},
-  };
 }
 
 export function fileToBase64(file: File): Promise<string> {
@@ -48,51 +24,6 @@ export function fileToBase64(file: File): Promise<string> {
   });
 }
 
-export async function imageFileToBase64(
-  file: File,
-  options?: {
-    maxWidth?: number;
-    maxHeight?: number;
-    quality?: number; // 0 → 1
-  },
-): Promise<string> {
-  const { maxWidth = 1200, maxHeight = 1200, quality = 0.8 } = options || {};
-
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const reader = new FileReader();
-
-    reader.onload = () => {
-      img.src = reader.result as string;
-    };
-
-    img.onload = () => {
-      let { width, height } = img;
-
-      // keep aspect ratio
-      if (width > maxWidth || height > maxHeight) {
-        const ratio = Math.min(maxWidth / width, maxHeight / height);
-        width *= ratio;
-        height *= ratio;
-      }
-
-      const canvas = document.createElement("canvas");
-      canvas.width = width;
-      canvas.height = height;
-
-      const ctx = canvas.getContext("2d");
-      if (!ctx) return reject("Canvas not supported");
-
-      ctx.drawImage(img, 0, 0, width, height);
-
-      const base64 = canvas.toDataURL("image/jpeg", quality);
-      resolve(base64);
-    };
-
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
 export function resolveTheme(mode: "light" | "dark" | "system") {
   if (mode === "dark") return "dark";
   if (mode === "light") return "light";
@@ -140,6 +71,29 @@ export function getCompiledCss() {
 
   return fs.readFileSync(path.join(assetsDir, cssFile), "utf-8");
 }
-export function clampStep(step: number) {
-  return Math.max(0, Math.min(step, CONTENT_STEPS.length - 1));
+
+export function formatLastUpdated(date: Date | string) {
+  const d = new Date(date);
+
+  const minutes = differenceInMinutes(new Date(), d);
+  const hours = differenceInHours(new Date(), d);
+  const days = differenceInDays(new Date(), d);
+
+  if (minutes < 1) {
+    return "Just now";
+  }
+
+  if (minutes < 60) {
+    return formatDistanceToNow(d, { addSuffix: true });
+  }
+
+  if (hours < 24) {
+    return formatDistanceToNow(d, { addSuffix: true });
+  }
+
+  if (days < 7) {
+    return formatDistanceToNow(d, { addSuffix: true });
+  }
+
+  return format(d, "dd MMM yyyy");
 }

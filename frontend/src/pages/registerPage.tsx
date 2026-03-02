@@ -1,9 +1,9 @@
 import { Animated } from "@/components/ui/animated";
-import RegisterForm from "@/features/authintication/components/RegisterForm";
+import RegisterForm from "@/features/authentication/components/RegisterForm";
 
 function RegisterPage() {
   return (
-    <div className=" w-full py-6">
+    <div className="w-full h-full">
       <Animated variant="flip">
         <RegisterForm />
       </Animated>

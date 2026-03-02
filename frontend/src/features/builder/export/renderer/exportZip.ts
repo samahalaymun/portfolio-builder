@@ -1,7 +1,7 @@
 import JSZip from "jszip";
 import { renderHtml } from "./renderHtml";
-import type { BuilderProfile } from "../../store/builder.store";
 import { copyJsFiles } from "./copyJsFiles";
+import type { BuilderProfile } from "../../types";
 
 export async function exportPortfolio(profile: BuilderProfile) {
   const zip = new JSZip();

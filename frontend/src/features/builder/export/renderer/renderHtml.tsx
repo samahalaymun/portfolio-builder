@@ -1,20 +1,20 @@
-import { renderToStaticMarkup } from "react-dom/server";
-import  PortfolioRoot  from "@/portfolio/PortfolioRoot";
-import type { BuilderProfile } from "../../store/builder.store";
 import { resolveTheme } from "@/lib/utils";
+import type { BuilderProfile } from "../../types";
+import { useThemeStore } from "../../store/builder.store";
 
 export function renderHtml(profile:BuilderProfile):string {
-    const mode = resolveTheme(profile.theme.mode) ?? "light";
-    const themeId = profile.theme.id;
-  const body = renderToStaticMarkup(
-    <PortfolioRoot
-      data={profile}
-      theme={{
-        id: themeId,
-        mode: mode,
-      }}
-    />,
-  );
+    const {themeMode} = useThemeStore((s)=>s);
+    const mode = resolveTheme(themeMode) ?? "light";
+    const themeId = profile.theme;
+  // const body = renderToStaticMarkup(
+  //   <PortfolioRoot
+  //     data={profile}
+  //     theme={{
+  //       id: themeId,
+  //       mode: mode,
+  //     }}
+  //   />,
+  // );
   return `<!DOCTYPE html>
 <html lang="en" class="${mode === "dark" ? "dark" : ""}" data-theme="${themeId}">
   <head>
@@ -25,7 +25,7 @@ export function renderHtml(profile:BuilderProfile):string {
     <link rel="stylesheet" href="assets/css/App.css" />
   </head>
   <body>
-    ${body}
+  
      <script src="assets/js/main.js"></script>
   </body>
 </html>`;

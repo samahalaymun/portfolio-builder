@@ -1,11 +1,29 @@
-
 import { Button } from "@/components/ui/button";
 import Logo from "../Logo";
 import NavItems from "./NavItems";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/features/authentication/context/AuthContext";
+import { queryClient } from "@/lib/reactQuery/QueryProvider";
+import { useMutation } from "@tanstack/react-query";
+import { api } from "@/lib/axios";
+import AuthUser from "./AuthUser";
 
 function MainNav() {
+  const { user, setToken, setUser } = useAuth();
+  const navigate = useNavigate();
+  const { mutate: logout } = useMutation({
+    mutationFn: async () => {
+      await api.post("/auth/logout");
+    },
+    onSuccess: () => {
+      setToken(null);
+      setUser(null);
+      queryClient.clear();
+      navigate("/");
+    },
+  });
+
   return (
     <nav
       aria-label="Main navigation"
@@ -36,12 +54,27 @@ function MainNav() {
           >
             Contact
           </NavLink>
-          <Button size="sm" asChild variant="secondary">
-            <Link to="/login">Login</Link>
-          </Button>
-          <Button size="sm" asChild>
-            <Link to="/signup">Sign up</Link>
-          </Button>
+          {user ? (
+            // Authenticated: Show Dashboard + Logout
+            <>
+              <Button size="sm" asChild variant="secondary">
+                <Link to="/builder/start" className="flex items-center gap-2">
+                  Dashboard
+                </Link>
+              </Button>
+              <AuthUser onLogout={() => logout()} user={user} />
+            </>
+          ) : (
+            // Unauthenticated: Show Login + Sign up
+            <>
+              <Button size="sm" asChild variant="secondary">
+                <Link to="/login">Login</Link>
+              </Button>
+              <Button size="sm" asChild>
+                <Link to="/signup">Sign up</Link>
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </nav>

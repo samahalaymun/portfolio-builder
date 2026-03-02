@@ -1,9 +1,9 @@
 import { Animated } from "@/components/ui/animated";
-import SignInForm from "@/features/authintication/components/SignInForm";
+import SignInForm from "@/features/authentication/components/SignInForm";
 
 function LoginPage() {
   return (
-    <div className=" w-full h-full py-6 ">
+    <div className=" w-full h-full">
       <Animated variant="flip">
         <SignInForm />
       </Animated>

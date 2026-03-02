@@ -1,0 +1,103 @@
+/* Add this to your globals.css or index.css */
+
+/* Tiptap Editor Styles */
+.ProseMirror {
+  min-height: 200px;
+  padding: 0.75rem;
+}
+
+.ProseMirror:focus {
+  outline: none;
+}
+
+.ProseMirror p {
+  margin: 0.5rem 0;
+}
+
+.ProseMirror p:first-child {
+  margin-top: 0;
+}
+
+.ProseMirror p:last-child {
+  margin-bottom: 0;
+}
+
+.ProseMirror strong {
+  font-weight: 600;
+}
+
+.ProseMirror em {
+  font-style: italic;
+}
+
+.ProseMirror ul,
+.ProseMirror ol {
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+.ProseMirror ul {
+  list-style-type: disc;
+}
+
+.ProseMirror ol {
+  list-style-type: decimal;
+}
+
+.ProseMirror li {
+  margin: 0.25rem 0;
+}
+
+.ProseMirror li p {
+  margin: 0;
+}
+
+/* ✅ Color support - CRITICAL FOR PRIMARY COLOR */
+.ProseMirror [style*="color"] {
+  /* Allow inline color styles */
+  color: inherit; /* Will be overridden by inline style */
+}
+
+/* ✅ Ensure colored text is visible */
+.ProseMirror span[style] {
+  display: inline;
+}
+
+/* ✅ Make sure color works with bold/italic */
+.ProseMirror strong[style*="color"],
+.ProseMirror em[style*="color"],
+.ProseMirror span[style*="color"] strong,
+.ProseMirror span[style*="color"] em {
+  color: inherit;
+}
+
+/* Placeholder */
+.ProseMirror p.is-editor-empty:first-child::before {
+  color: hsl(var(--muted-foreground));
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+/* Dark mode adjustments */
+@media (prefers-color-scheme: dark) {
+  .ProseMirror {
+    color: hsl(var(--foreground));
+  }
+}
+
+/* ✅ Additional fixes for better rendering */
+.ProseMirror > * + * {
+  margin-top: 0.5rem;
+}
+
+.ProseMirror ul,
+.ProseMirror ol {
+  padding: 0 1rem;
+  margin: 0.5rem 0;
+}
+
+.ProseMirror li {
+  display: list-item;
+}
