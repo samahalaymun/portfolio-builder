@@ -17,6 +17,7 @@ function MobileSideBar() {
   const [settingCollapse, setSettingCollapse] = useState(false);
   const navigate = useNavigate();
   const { setToken, setUser, user } = useAuth();
+  const settingNavActive = window.location.pathname.includes("settings");
   const { mutate: logout } = useMutation({
     mutationFn: async () => {
       await api.post("/auth/logout");
@@ -47,7 +48,6 @@ function MobileSideBar() {
 
         {/* Logo in mobile header */}
         <BuilderLogo />
-
       </div>
 
       {/* Overlay */}
@@ -68,22 +68,21 @@ function MobileSideBar() {
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b">
-         
-            <div className="flex gap-3 items-center flex-1 min-w-0">
-              <UserAvatar
-                className="w-10 h-10 shrink-0"
-                avatarUrl=""
-                username={user?.name}
-              />
-              <div className="min-w-0 flex-1">
-                <h5 className="text-sm font-semibold text-foreground truncate">
-                  {user?.name || "User"}
-                </h5>
-                <p className="text-xs text-muted-foreground truncate">
-                  {user?.email}
-                </p>
-              </div>
+          <div className="flex gap-3 items-center flex-1 min-w-0">
+            <UserAvatar
+              className="w-10 h-10 shrink-0"
+              avatarUrl=""
+              username={user?.name}
+            />
+            <div className="min-w-0 flex-1">
+              <h5 className="text-sm font-semibold text-foreground truncate">
+                {user?.name || "User"}
+              </h5>
+              <p className="text-xs text-muted-foreground truncate">
+                {user?.email}
+              </p>
             </div>
+          </div>
           <button
             onClick={() => setOpen(false)}
             className="p-2 -mr-2 rounded-lg hover:bg-muted transition-colors shrink-0"
@@ -120,8 +119,12 @@ function MobileSideBar() {
             <div className="pt-2 mt-2 border-t border-border">
               <button
                 onClick={() => setSettingCollapse(!settingCollapse)}
-                className="flex items-center w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-all
-                           text-muted-foreground hover:text-foreground hover:bg-muted"
+                className={cn(
+                  "flex items-center w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
+                  settingNavActive
+                    ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted",
+                )}
               >
                 <Settings className="h-5 w-5 shrink-0" />
                 <span className="flex-1 text-left ml-3">Settings</span>
@@ -144,8 +147,8 @@ function MobileSideBar() {
                         cn(
                           "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all",
                           isActive
-                            ? "bg-primary/10 text-primary"
-                            : "text-muted-foreground hover:text-foreground hover:bg-muted",
+                            ? "text-primary"
+                            : "text-muted-foreground hover:text-primary",
                         )
                       }
                     >

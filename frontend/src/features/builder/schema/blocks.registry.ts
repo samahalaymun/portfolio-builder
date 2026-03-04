@@ -118,7 +118,7 @@ export const BLOCKS_REGISTRY: Record<string, BuilderBlock> = {
   certifications: {
     id: "certifications",
     label: "Certifications",
-    form:CertificationsSection,
+    form: CertificationsSection,
     fields: ["certifications"],
     required: false,
     isComplete: (content) => Boolean(content.certifications?.length),
@@ -129,6 +129,6 @@ export const BLOCKS_REGISTRY: Record<string, BuilderBlock> = {
     form: PhotosSection,
     fields: ["avatar"],
     required: false,
-    isComplete: (content) => Boolean(content.avatar),
+    isComplete: (content) => Boolean(content.avatar?.publicId),
   },
 };

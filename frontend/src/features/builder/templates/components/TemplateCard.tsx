@@ -1,8 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Eye, Check, Crown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, resolveTheme } from "@/lib/utils";
 import type { Template } from "../../types";
+import { useTheme } from "next-themes";
 
 
 interface TemplateCardProps {
@@ -20,6 +21,12 @@ export function TemplateCard({
   onSelect,
   isSelecting = false,
 }: TemplateCardProps) {
+  const { theme } = useTheme();
+  const resolvedTheme = resolveTheme(theme);
+  const preview =
+    resolvedTheme === "dark"
+      ? (template.previewUrlDark ?? template.previewUrl) // fallback to light
+      : template.previewUrl;
   return (
     <div
       className={cn(
@@ -30,15 +37,14 @@ export function TemplateCard({
       {/* Preview Image */}
       <div className="aspect-[4/3] bg-muted relative overflow-hidden">
         <img
-          src={template.previewUrl}
+          src={preview}
           alt={template.name}
-          className="w-full h-full object-cover transition-transform group-hover:scale-105"
+          className="w-full h-full  transition-transform group-hover:scale-105"
           onError={(e) => {
-             const target = e.currentTarget;
-             target.onerror = null;
+            const target = e.currentTarget;
+            target.onerror = null;
             // Fallback if image fails to load
-            e.currentTarget.src =
-              "";
+            e.currentTarget.src = "";
           }}
         />
 

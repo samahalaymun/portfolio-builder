@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 interface AutoSaveIndicatorProps {
   isSaving: boolean;
   isDirty: boolean;
-  skipSave:boolean;
+
   lastSaved?: Date;
   className?: string;
 }
@@ -15,7 +15,6 @@ export function AutoSaveIndicator({
   isDirty,
   lastSaved,
   className,
-  skipSave,
 }: AutoSaveIndicatorProps) {
   const [showSaved, setShowSaved] = useState(false);
 
@@ -52,19 +51,6 @@ export function AutoSaveIndicator({
       >
         <CheckCircle2 className="w-4 h-4" />
         <span>Saved at {formatLastUpdated(lastSaved ?? new Date())}</span>
-      </div>
-    );
-  }
-  if (skipSave){
-    return (
-      <div
-        className={cn(
-          "flex items-center gap-2 text-sm text-destructive",
-          className,
-        )}
-      >
-        <X className="w-4 h-4" />
-        <span>Auto-save skipped</span>
       </div>
     );
   }

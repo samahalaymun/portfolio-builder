@@ -3,7 +3,6 @@ import type { ContactReason, FAQ } from "@/features/contact/types";
 import {
   Eye,
   FolderUp,
-  HelpCircle,
   LayoutTemplate,
   ListStart,
   Lock,
@@ -31,7 +30,6 @@ export const THEMES = [
 export const SETTINGS_ITEMS = [
   { icon: User, label: "User details", path: "/settings/user-details" },
   { icon: Lock, label: "Your access", path: "/settings/user-access" },
-  { icon: HelpCircle, label: "Support", path: "/settings/user-support" },
   { icon: MessageSquare, label: "Feedback", path: "/settings/user-feedback" },
 ];
 export const steps = [

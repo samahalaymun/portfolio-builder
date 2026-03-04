@@ -24,7 +24,7 @@ export function fileToBase64(file: File): Promise<string> {
   });
 }
 
-export function resolveTheme(mode: "light" | "dark" | "system") {
+export function resolveTheme(mode?: string) {
   if (mode === "dark") return "dark";
   if (mode === "light") return "light";
   if (mode === "system") {

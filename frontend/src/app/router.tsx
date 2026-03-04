@@ -11,8 +11,9 @@ import AuthContainer from "@/features/authentication/layout/authContainer";
 import { RequireAuth } from "@/pages/RequireAuth";
 import { GuestOnly } from "@/pages/ProtectAuthPages";
 import PublicLayout from "@/layouts/PublicLayout";
-import PublicPortfolioPage from "@/features/public/pages/PublicPortfolioPage";
+import PublicPortfolioPage from "@/features/public/pages/publicPortfolioPage";
 import { PageLoadingSpinner } from "@/components/shared/PageLoadingSpinner";
+import PublicPortfolioErrorPage from "@/features/public/pages/publicPortfolioErrorPage";
 
 // ==================== LAZY LOADED (Builder Pages) ====================
 const StartPage = lazy(() => import("@/features/builder/pages/StartPage"));
@@ -37,7 +38,12 @@ const ResetPasswordPage = lazy(() => import("@/pages/resetPasswordPage"));
 const UserDetailsPage = lazy(
   () => import("@/features/builder/settings/pages/UserDetailsPage"),
 );
-
+const UserAccessPage = lazy(
+  () => import("@/features/builder/settings/pages/userAccessPage"),
+);
+const UserFeedBackPage = lazy(
+  () => import("@/features/builder/settings/pages/userFeedBackPage"),
+);
 export const router = createBrowserRouter([
   // Builder Pages - Only for authenticated users
   {
@@ -175,6 +181,23 @@ export const router = createBrowserRouter([
           </Suspense>
         ),
       },
+      {
+        path: "user-access",
+        element: (
+          <Suspense fallback={<PageLoadingSpinner />}>
+            <UserAccessPage />
+          </Suspense>
+        ),
+      },
+
+      {
+        path: "user-feedback",
+        element: (
+          <Suspense fallback={<PageLoadingSpinner />}>
+            <UserFeedBackPage />
+          </Suspense>
+        ),
+      },
     ],
   },
   {
@@ -185,6 +208,6 @@ export const router = createBrowserRouter([
   {
     path: ":username",
     element: <PublicPortfolioPage />,
-    errorElement: <ErrorPage />,
+    errorElement:<PublicPortfolioErrorPage/>
   },
 ]);

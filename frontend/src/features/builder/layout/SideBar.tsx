@@ -20,7 +20,7 @@ function SideBar({
   const navigate = useNavigate();
   const { setToken, setUser, user } = useAuth();
   const [settingCollapse, setSettingCollapse] = useState(false);
-
+  const settingNavActive = window.location.pathname.includes("settings");
   const { mutate: logout } = useMutation({
     mutationFn: async () => {
       await api.post("/auth/logout");
@@ -46,29 +46,28 @@ function SideBar({
       )}
     >
       <div className="flex items-center justify-between px-4 py-3 mb-4">
-          <div
-            className={cn(
-              "flex gap-3 items-center flex-1 min-w-0",
-              collapse && "hidden",
-            )}
-          >
-            {/* User Avatar */}
-            <UserAvatar
-              className="w-10 h-10"
-              avatarUrl=""
-              username={user?.name}
-            />
-            {/* User Info */}
-            <div className="min-w-0 flex-1">
-              <h5 className="text-sm font-semibold text-foreground truncate">
-                {user?.name || "User"}
-              </h5>
-              <p className="text-xs text-muted-foreground truncate">
-                {user?.email}
-              </p>
-            </div>
+        <div
+          className={cn(
+            "flex gap-3 items-center flex-1 min-w-0",
+            collapse && "hidden",
+          )}
+        >
+          {/* User Avatar */}
+          <UserAvatar
+            className="w-10 h-10"
+            avatarUrl=""
+            username={user?.name}
+          />
+          {/* User Info */}
+          <div className="min-w-0 flex-1">
+            <h5 className="text-sm font-semibold text-foreground truncate">
+              {user?.name || "User"}
+            </h5>
+            <p className="text-xs text-muted-foreground truncate">
+              {user?.email}
+            </p>
           </div>
-     
+        </div>
 
         <button
           onClick={() => setCollapse(!collapse)}
@@ -110,8 +109,10 @@ function SideBar({
               onClick={() => setSettingCollapse(!settingCollapse)}
               className={cn(
                 "flex items-center w-full px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
-                "text-muted-foreground hover:text-foreground hover:bg-muted",
                 collapse && "justify-center",
+                settingNavActive
+                  ? "bg-primary text-primary-foreground shadow-md shadow-primary/25"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted",
               )}
               title={collapse ? "Settings" : undefined}
             >
@@ -140,13 +141,13 @@ function SideBar({
                       cn(
                         "flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-all",
                         isActive
-                          ? "bg-primary/10 text-primary"
-                          : "text-muted-foreground hover:text-foreground hover:bg-muted",
+                          ? " text-primary"
+                          : "text-muted-foreground hover:text-primary",
                       )
                     }
                   >
                     <item.icon className="h-4 w-4 shrink-0" />
-                   {!collapse&& <span>{item.label}</span>}
+                    {!collapse && <span>{item.label}</span>}
                   </NavLink>
                 ))}
               </div>

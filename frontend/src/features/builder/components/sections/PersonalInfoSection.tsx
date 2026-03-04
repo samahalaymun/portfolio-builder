@@ -44,6 +44,7 @@ function PersonalInfoSection() {
       skills: profile.skills || [],
     });
   }
+  
   return (
     <FormSection
       title="Personal Information"

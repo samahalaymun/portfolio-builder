@@ -98,6 +98,7 @@ export interface Template {
   name: string;
   description: string;
   previewUrl: string;
+  previewUrlDark?:string;
   isPremium: boolean;
   isActive: boolean;
   createdAt: string;

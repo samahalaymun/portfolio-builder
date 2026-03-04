@@ -10,17 +10,14 @@ import { QueryProvider } from "./lib/reactQuery/QueryProvider.tsx";
 import { AuthProvider } from "./features/authentication/context/AuthContext.tsx";
 import AuthBootstrap from "./features/authentication/components/AuthBootstrap.tsx";
 
-
 createRoot(document.getElementById("root")!).render(
-  <StrictMode>
-    <NextThemeProvider attribute="class" defaultTheme="system" enableSystem>
-      <QueryProvider>
-        <AuthProvider>
-          <AuthBootstrap>
-              <RouterProvider router={router} />
-          </AuthBootstrap>
-        </AuthProvider>
-      </QueryProvider>
-    </NextThemeProvider>
-  </StrictMode>,
+  <NextThemeProvider attribute="class" defaultTheme="system" enableSystem>
+    <QueryProvider>
+      <AuthProvider>
+        <AuthBootstrap>
+          <RouterProvider router={router} />
+        </AuthBootstrap>
+      </AuthProvider>
+    </QueryProvider>
+  </NextThemeProvider>,
 );

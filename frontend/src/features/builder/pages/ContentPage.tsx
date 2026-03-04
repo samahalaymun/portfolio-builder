@@ -1,9 +1,9 @@
 import { Animated } from "@/components/ui/animated";
 import Heading from "../components/Heading";
-import { FormProvider, useForm } from "react-hook-form";
+import { FormProvider, useForm, useFormState } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { contentSchema, type ContentFormValues } from "../schema";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, memo } from "react";
 import { STEP_QUERY_KEY } from "@/data/constants";
 import StepIndicator from "../components/StepIndicator";
 import { Button } from "@/components/ui/button";
@@ -30,11 +30,35 @@ import {
 } from "../utils/contentconverters";
 import { AutoSaveIndicator } from "../components/Autosaveindicator";
 import { useAutoSave } from "../hooks/useAutoSave";
+import type { UseFormReturn } from "react-hook-form";
+
+// ✅ Isolated — useFormState only re-renders this small component, not ContentPage
+const AutoSaveIndicatorWrapper = memo(
+  ({
+    form,
+    isSaving,
+    lastSaved,
+  }: {
+    form: UseFormReturn<ContentFormValues>;
+    isSaving: boolean;
+    lastSaved: Date | undefined;
+  }) => {
+    const { isDirty } = useFormState({ control: form.control });
+    return (
+      <AutoSaveIndicator
+        isSaving={isSaving}
+        isDirty={isDirty}
+        lastSaved={lastSaved}
+      />
+    );
+  },
+);
 
 const breadcrumbs = [
   { label: "Builder", to: "/builder/start" },
   { label: "Content" },
 ];
+
 const DEFAULT_SECTION_ORDER = [
   "personalInfo",
   "about",
@@ -55,12 +79,7 @@ const EMPTY_CONTENT: PortfolioContent = {
   skills: [],
   projects: [],
   experience: [],
-  contact: {
-    email: "",
-    phone: "",
-    location: "",
-    socials: {},
-  },
+  contact: { email: "", phone: "", location: "", socials: {} },
   avatar: { publicId: "", url: "" },
   education: [],
   certifications: [],
@@ -69,12 +88,12 @@ const EMPTY_CONTENT: PortfolioContent = {
 };
 
 function ContentPage() {
-  const [step, setStep] = useState(0);
+  document.title = "Portify - Content";
+
   const location = useLocation();
   const navigate = useNavigate();
 
-  document.title = "Portify - " + "Content";
-  // Fetch portfolio
+  // ─── Fetch portfolio ─────────────────────────────────────────────────────────
   const {
     data: portfolio,
     isFetching,
@@ -86,9 +105,10 @@ function ContentPage() {
       const res = await api.get("/portfolios/me");
       return res.data;
     },
-    staleTime: 2 * 60 * 1000, // 2 minutes
+    staleTime: 2 * 60 * 1000,
   });
-  // Update portfolio mutation
+
+  // ─── Update mutation ─────────────────────────────────────────────────────────
   const {
     mutate: updatePortfolioMutation,
     isPending,
@@ -104,10 +124,16 @@ function ContentPage() {
     },
   });
 
-  //Memoized content merge
+  // ✅ Stable ref for mutate — useMutation returns new reference every render
+  // Without this, handleAutoSave recreates → useAutoSave effect re-runs → extra render
+  const mutateRef = useRef(updatePortfolioMutation);
+  useEffect(() => {
+    mutateRef.current = updatePortfolioMutation;
+  }, [updatePortfolioMutation]);
+
+  // ─── Derived data ────────────────────────────────────────────────────────────
   const portfolioContent = useMemo<PortfolioContent>(() => {
     if (!portfolio?.content) return EMPTY_CONTENT;
-
     return {
       ...EMPTY_CONTENT,
       ...portfolio.content,
@@ -115,141 +141,165 @@ function ContentPage() {
         ...EMPTY_CONTENT.personalInfo,
         ...portfolio.content.personalInfo,
       },
-      contact: {
-        ...EMPTY_CONTENT.contact,
-        ...portfolio.content.contact,
-      },
+      contact: { ...EMPTY_CONTENT.contact, ...portfolio.content.contact },
     };
   }, [portfolio?.content]);
+
+  const sectionOrder = useMemo(
+    () => portfolio?.content?.sectionsOrder ?? DEFAULT_SECTION_ORDER,
+    [portfolio?.content?.sectionsOrder],
+  );
 
   const formValues = useMemo(
     () => portfolioContentToFormValues(portfolioContent),
     [portfolioContent],
   );
 
-  //Derive sectionOrder from portfolio (no separate state)
-  const sectionOrder = useMemo(
-    () => portfolio?.content?.sectionsOrder ?? DEFAULT_SECTION_ORDER,
-    [portfolio?.content?.sectionsOrder],
-  );
+  // ─── Step derived from URL ───────────────────────────────────────────────────
+  const step = useMemo(() => {
+    const params = new URLSearchParams(location.search);
+    const raw = parseInt(params.get(STEP_QUERY_KEY) ?? "0", 10);
+    const parsed = isNaN(raw) || raw < 0 ? 0 : raw;
+    if (!portfolio) return parsed;
+    const { step: resolvedStep } = resolveStepFromUrl(
+      location.search,
+      portfolio.content,
+      sectionOrder,
+    );
+    return resolvedStep;
+  }, [location.search, portfolio, sectionOrder]);
 
-  // Form setup
+  // ✅ Sync URL once after portfolio loads — places step in URL if missing
+  // and clamps invalid steps (e.g. ?step=9 when only 3 sections done)
+  const didSyncUrlRef = useRef(false);
+  useEffect(() => {
+    if (!portfolio || didSyncUrlRef.current) return;
+    didSyncUrlRef.current = true;
+    const { step: resolvedStep, shouldSyncUrl } = resolveStepFromUrl(
+      location.search,
+      portfolio.content,
+      sectionOrder,
+    );
+    if (shouldSyncUrl) {
+      navigate(`?${STEP_QUERY_KEY}=${resolvedStep}`, { replace: true });
+    }
+  }, [portfolio]);
+
+  // ─── Form ────────────────────────────────────────────────────────────────────
   const form = useForm<ContentFormValues>({
     resolver: zodResolver(contentSchema),
     mode: "onBlur",
     values: formValues,
   });
 
-  const {
-    trigger,
-    getValues,
-    formState: { isDirty },
-    reset,
-  } = form;
+  const { trigger, getValues } = form;
 
-  const handleAutoSave = useCallback(
-    async (formData: ContentFormValues) => {
-      const content = formValuesToPortfolioContent(formData);
-      return new Promise<void>((resolve, reject) => {
-        updatePortfolioMutation(
-          {
-            content: {
-              ...content,
-              sectionsOrder: sectionOrder,
-            },
-          },
-          {
-            onSuccess: () => {
-              resolve();
-            },
-            onError: (error) => {
-              console.error("Auto-save error:", error);
-              reject(error);
-            },
-          },
-        );
-      });
-    },
-    [updatePortfolioMutation, sectionOrder],
-  );
-
-  const {
-    isSaving: isAutoSaving,
-    lastSaved, //Get it from hook
-    forceSave,
-    skipSave
-  } = useAutoSave({
-    form,
-    onSave: handleAutoSave,
-    debounceMs: 2000, // 2 seconds after user stops typing
-    enabled: true,
-    validateBeforeSave: true,
-  });
-  //Sync step from URL
+  // ─── Auto-save ───────────────────────────────────────────────────────────────
+  const sectionOrderRef = useRef(sectionOrder);
   useEffect(() => {
-    if (!portfolio) return;
-    const { step: resolvedStep, shouldSyncUrl } = resolveStepFromUrl(
-      location.search,
-      portfolio.content,
-      sectionOrder,
-    );
+    sectionOrderRef.current = sectionOrder;
+  }, [sectionOrder]);
 
-    setStep(resolvedStep);
-    if (shouldSyncUrl) {
-      navigate(`?${STEP_QUERY_KEY}=${resolvedStep}`, { replace: true });
-    }
-  }, [portfolio, location.search, navigate, sectionOrder]);
+  // ✅ handleAutoSave has NO deps — reads everything via refs
+  const handleAutoSave = useCallback(async (formData: ContentFormValues) => {
+    const content = formValuesToPortfolioContent(formData);
+    return new Promise<void>((resolve, reject) => {
+      mutateRef.current(
+        { content: { ...content, sectionsOrder: sectionOrderRef.current } },
+        { onSuccess: () => resolve(), onError: reject },
+      );
+    });
+  }, []); // ✅ truly stable — never recreated
 
-  //Calculate completed steps
+
+
+  // ─── Completed steps ─────────────────────────────────────────────────────────
   const completedSteps = useMemo(() => {
     if (!portfolio?.content) return [];
-    return sectionOrder.filter((id: any) =>
+    return sectionOrder.filter((id: string) =>
       BLOCKS_REGISTRY[id]?.isComplete(portfolio.content),
     );
-  }, [portfolio?.content, sectionOrder, portfolio?.id]);
+  }, [portfolio?.content, sectionOrder]);
 
-  //Current block
+  // ─── Current block ───────────────────────────────────────────────────────────
   const currentBlockId = sectionOrder[step];
   const currentBlock = useMemo(
     () => BLOCKS_REGISTRY[currentBlockId],
     [currentBlockId],
   );
   const BlockForm = useMemo(() => currentBlock?.form, [currentBlock]);
-  //Manual save (for Next button)
-  const updatePortfolio = useCallback(async (): Promise<void> => {
-    // Force save any pending changes
-    await forceSave();
-  }, [forceSave]);
-  //Navigate to next step
+  const {
+    isSaving: isAutoSaving,
+    lastSaved,
+    forceSave,
+  } = useAutoSave({
+    form,
+    onSave: handleAutoSave,
+    debounceMs: 2000,
+    enabled: !!portfolio,
+    // ✅ Only validate current block's fields before auto-saving
+    // e.g. for "about" block: ["about"] — won't block save due to unrelated empty fields
+    fieldsToValidate: currentBlock?.fields,
+  });
+  // ─── Section management ──────────────────────────────────────────────────────
+  const saveSectionsOrder = useCallback(
+    (newOrder: string[]) => {
+      const content = formValuesToPortfolioContent(getValues());
+      mutateRef.current(
+        { content: { ...content, sectionsOrder: newOrder } },
+        {
+          onSuccess: () => toast.success("Sections updated"),
+          onError: () => toast.error("Failed to update sections"),
+        },
+      );
+    },
+    [getValues],
+  );
+
+  const handleAddSection = useCallback(
+    (id: string) => saveSectionsOrder([...sectionOrder, id]),
+    [sectionOrder, saveSectionsOrder],
+  );
+
+  const handleRemoveSection = useCallback(
+    (id: string) => {
+      const newOrder = sectionOrder.filter((x: string) => x !== id);
+      const newStep =
+        step >= newOrder.length ? Math.max(0, newOrder.length - 1) : step;
+      if (newStep !== step)
+        navigate(`?${STEP_QUERY_KEY}=${newStep}`, { replace: true });
+      saveSectionsOrder(newOrder);
+    },
+    [sectionOrder, step, navigate, saveSectionsOrder],
+  );
+
+  const handleReorderSections = useCallback(
+    (newOrder: string[]) => saveSectionsOrder(newOrder),
+    [saveSectionsOrder],
+  );
+
+  // ─── Navigation ──────────────────────────────────────────────────────────────
   const handleNext = useCallback(async () => {
-    // Validate current block fields
     const isValid = await trigger(currentBlock.fields as any);
-
     if (!isValid) {
-      toast.error("Please fix validation errors");
+      toast.error("Please fix validation errors before continuing.");
       return;
     }
 
-    // Check block completion
-    const formValues = getValues();
-    const content = formValuesToPortfolioContent(formValues);
+    const content = formValuesToPortfolioContent(getValues());
     const isComplete = currentBlock.isComplete(content);
-
     if (!isComplete) {
-      toast.error("Please complete or remove this section");
+      toast.error("Please complete all required fields in this section.");
       return;
     }
 
-    // Save and navigate
     try {
-      await updatePortfolio();
-
-      const nextStep = step + 1;
+      await forceSave();
       const maxStep = getMaxAllowedStep(content, sectionOrder);
-      const safeStep = Math.min(nextStep, maxStep);
-
-      navigate(`?${STEP_QUERY_KEY}=${safeStep}`, { replace: true });
-    } catch (error) {
+      navigate(`?${STEP_QUERY_KEY}=${Math.min(step + 1, maxStep)}`, {
+        replace: true,
+      });
+    } catch {
       toast.error("Failed to save. Please try again.");
     }
   }, [
@@ -259,79 +309,30 @@ function ContentPage() {
     step,
     sectionOrder,
     navigate,
-    updatePortfolio,
+    forceSave,
   ]);
 
-  //Navigate to previous step
-  const handlePrev = useCallback(() => {
-    const prevStep = Math.max(0, step - 1);
-    navigate(`?${STEP_QUERY_KEY}=${prevStep}`, { replace: true });
-  }, [step, navigate]);
+  const handlePrev = useCallback(
+    () =>
+      navigate(`?${STEP_QUERY_KEY}=${Math.max(0, step - 1)}`, {
+        replace: true,
+      }),
+    [step, navigate],
+  );
 
   const handleGoToTemplates = useCallback(async () => {
     try {
-      await updatePortfolio();
+      await forceSave();
       navigate("/builder/templates");
-    } catch (error) {
+    } catch {
       toast.error("Failed to save. Please try again.");
     }
-  }, [updatePortfolio, navigate]);
-  // Section order management
-  const saveSectionsOrder = useCallback(
-    (newOrder: string[]) => {
-      const formData = getValues();
-      const content = formValuesToPortfolioContent(formData);
+  }, [forceSave, navigate]);
+console.log("content page render");
 
-      updatePortfolioMutation(
-        {
-          content: {
-            ...content,
-            sectionsOrder: newOrder,
-          },
-        },
-        {
-          onSuccess: () => toast.success("Sections updated"),
-          onError: () => toast.error("Failed to update sections"),
-        },
-      );
-    },
-    [updatePortfolioMutation, getValues],
-  );
+  // ─── Guards ──────────────────────────────────────────────────────────────────
+  if (isFetching && !portfolio) return <ContentPageSkeleton />;
 
-  const handleAddSection = useCallback(
-    (id: string) => {
-      const newOrder = [...sectionOrder, id];
-      saveSectionsOrder(newOrder);
-    },
-    [sectionOrder, saveSectionsOrder],
-  );
-  const handleRemoveSection = useCallback(
-    (id: string) => {
-      const newOrder = sectionOrder.filter((x: any) => x !== id);
-
-      // Adjust step if needed
-      if (step >= newOrder.length) {
-        const newStep = Math.max(0, newOrder.length - 1);
-        setStep(newStep);
-        navigate(`?${STEP_QUERY_KEY}=${newStep}`, { replace: true });
-      }
-
-      saveSectionsOrder(newOrder);
-    },
-    [sectionOrder, step, navigate, saveSectionsOrder],
-  );
-  const handleReorderSections = useCallback(
-    (newOrder: string[]) => {
-      saveSectionsOrder(newOrder);
-    },
-    [saveSectionsOrder],
-  );
-
-  if (isFetching && !portfolio) {
-    return <ContentPageSkeleton />;
-  }
-
-  // ✅ Error handling for missing block
   if (!currentBlock || !BlockForm) {
     return (
       <>
@@ -347,11 +348,12 @@ function ContentPage() {
       </>
     );
   }
+
+  // ─── Render ──────────────────────────────────────────────────────────────────
   return (
     <>
       <Breadcrumbs items={breadcrumbs} />
       <div className="py-16 px-4 md:px-10 max-w-7xl mx-auto">
-        {/* Header */}
         <div className="mb-12">
           <Animated variant="flip" delay={0}>
             <Heading
@@ -363,16 +365,13 @@ function ContentPage() {
               sections or add them later.
             </p>
           </Animated>
-          {/* ✅ Auto-save indicator */}
-          <AutoSaveIndicator
+          <AutoSaveIndicatorWrapper
+            form={form}
             isSaving={isAutoSaving}
-            isDirty={isDirty}
             lastSaved={lastSaved}
-            skipSave={skipSave}
           />
         </div>
 
-        {/* Error alert */}
         {(isQueryError || isMutationError) && (
           <Alert variant="destructive" className="mb-8">
             <AlertCircle className="h-4 w-4" />
@@ -381,6 +380,7 @@ function ContentPage() {
             </AlertDescription>
           </Alert>
         )}
+
         <div className="grid md:grid-cols-[280px_1fr] gap-8">
           <BlockManager
             order={sectionOrder}
@@ -388,6 +388,7 @@ function ContentPage() {
             onAdd={handleAddSection}
             onRemove={handleRemoveSection}
           />
+
           <div>
             <FormProvider {...form}>
               <StepIndicator
@@ -403,14 +404,12 @@ function ContentPage() {
                 </AlertDescription>
               </Alert>
 
-              {/* ✅ Disable form during save */}
               <fieldset disabled={isPending}>
                 <form className="space-y-8 mt-10">
                   <BlockForm />
                 </form>
               </fieldset>
 
-              {/* Navigation buttons */}
               <div className="flex justify-between mt-12 gap-2">
                 <Button
                   variant="outline"
@@ -419,7 +418,6 @@ function ContentPage() {
                 >
                   Previous
                 </Button>
-
                 {step < sectionOrder.length - 1 ? (
                   <Button disabled={isPending} onClick={handleNext}>
                     {isPending && <Spinner className="mr-2" />}

@@ -156,8 +156,14 @@ function UserDetailsPage() {
                   type="submit"
                   disabled={!isProfileDirty || isProfileSubmitting}
                 >
-                  {isProfileSubmitting && <Spinner />}
-                  Save changes
+                  {isProfileSubmitting ? (
+                    <div className="flex gap-1.5 items-center">
+                      <Spinner className="size-6" />
+                      Saving password...
+                    </div>
+                  ) : (
+                    <> Save changes</>
+                  )}
                 </Button>
               </div>
             </FormSection>
@@ -216,8 +222,14 @@ function UserDetailsPage() {
                   type="submit"
                   disabled={isPasswordSubmitting || !isPasswordDirty}
                 >
-                  {isPasswordSubmitting && <Spinner />}
-                  Update password
+                  {isPasswordSubmitting ? (
+                    <div className="flex gap-1.5 items-center">
+                      <Spinner className="size-6" />
+                      Updating password...
+                    </div>
+                  ) : (
+                    <>Update password</>
+                  )}
                 </Button>
               </div>
             </FormSection>

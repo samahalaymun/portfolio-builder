@@ -1,5 +1,4 @@
-// src/features/builder/pages/TemplatesPage.tsx
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/axios";
 import { Spinner } from "@/components/ui/spinner";
@@ -23,6 +22,7 @@ const breadcrumbs = [
   { label: "Templates" },
 ];
 function TemplatesPage() {
+  document.title = "Portify - Templates";
   const [previewTemplate, setPreviewTemplate] = useState<Template | null>(null);
   const [updatingTemplateId, setUpdatingTemplateId] = useState<string | null>(
     null,
@@ -65,16 +65,14 @@ function TemplatesPage() {
       setUpdatingTemplateId(null); 
     },
   });
-  useEffect(() => {
-    document.title = "Portify - Templates";
-  }, []);
+
   const isLoading = templatesLoading || portfolioLoading;
 
   const handleSelectTemplate = (templateId: string) => {
     setUpdatingTemplateId(templateId);
     updateTemplate(templateId);
   };
-
+  
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-200px)]">
