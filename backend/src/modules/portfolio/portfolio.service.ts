@@ -119,6 +119,7 @@ export class PortfolioService {
             email: true,
             name: true,
             username: true,
+            role:true
           },
         },
         template: true,

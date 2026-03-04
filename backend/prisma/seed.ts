@@ -9,7 +9,10 @@ async function seedTemplates() {
       name: 'Default Portfolio',
       description:
         'Clean and professional single-column layout. Perfect for developers and designers showcasing their work.',
-      previewUrl: '/templates/previews/default.png',
+      previewUrl:
+        'https://res.cloudinary.com/dbakezv9c/image/upload/v1772651869/localhost_5173_samah_abu_laymun_2_ihls2d.png',
+      previewUrlDark:
+        'https://res.cloudinary.com/dbakezv9c/image/upload/v1772651956/localhost_5173_samah_abu_laymun_vgmdai.png',
       isPremium: false,
       isActive: true,
     },
@@ -18,7 +21,10 @@ async function seedTemplates() {
       name: 'Minimal',
       description:
         'Ultra-clean minimalist design with focus on content. Great for writers, consultants, and professionals who prefer simplicity.',
-      previewUrl: '/templates/previews/minimal.png',
+      previewUrl:
+        'https://res.cloudinary.com/dbakezv9c/image/upload/v1772652241/localhost_5173_samah_abu_laymun_2_tgnvih.png',
+      previewUrlDark:
+        'https://res.cloudinary.com/dbakezv9c/image/upload/v1772652082/localhost_5173_samah_abu_laymun_1_pwqoz9.png',
       isPremium: false,
       isActive: true,
     },
@@ -27,7 +33,10 @@ async function seedTemplates() {
       name: 'Modern Grid',
       description:
         'Contemporary two-column grid layout with bold typography and modern aesthetics. Perfect for creative professionals.',
-      previewUrl: '/templates/previews/modern.png',
+      previewUrl:
+        'https://res.cloudinary.com/dbakezv9c/image/upload/v1772652410/localhost_5173_samah_abu_laymun_w3cjjp.png',
+      previewUrlDark:
+        'https://res.cloudinary.com/dbakezv9c/image/upload/v1772652463/localhost_5173_samah_abu_laymun_y3wvni.png',
       isPremium: false,
       isActive: true,
     },

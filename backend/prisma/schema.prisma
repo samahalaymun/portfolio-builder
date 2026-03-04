@@ -18,7 +18,7 @@ model User {
   refreshTokenHash String?
   role             Role       @default(USER)
   portfolio        Portfolio?
-
+  feedbacks        Feedback[]
   resetTokenHash   String?
   resetTokenExpiry DateTime?
 }
@@ -53,6 +53,7 @@ model Template {
   name        String
   description String
   previewUrl  String
+  previewUrlDark String?
   isPremium   Boolean     @default(false)
   isActive    Boolean     @default(true)
   createdAt   DateTime    @default(now())    //Add timestamps
@@ -74,6 +75,20 @@ model Contact {
 
   @@index([email])
   @@index([status])
+  @@index([createdAt])
+}
+model Feedback {
+  id        String   @id @default(uuid())
+  userId    String
+  score     Int      // NPS score 0–10
+  comment   String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([score])
   @@index([createdAt])
 }
 

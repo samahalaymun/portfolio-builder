@@ -191,18 +191,18 @@ export class AuthService {
         },
       },
     });
-   
+
     // Find user with matching token hash
-    let user = null;
-    // for (const u of users) {
-    //   if (u.resetTokenHash) {
-    //     const isValid = await bcrypt.compare(token, u.resetTokenHash);
-    //     if (isValid) {
-    //       user = u;
-    //       break;
-    //     }
-    //   }
-    // }
+    let user: (typeof users)[0] | undefined = undefined;
+    for (const u of users) {
+      if (u.resetTokenHash) {
+        const isValid = await bcrypt.compare(token, u.resetTokenHash);
+        if (isValid) {
+          user = u;
+          break;
+        }
+      }
+    }
 
     if (!user) {
       throw new BadRequestException('Invalid or expired reset token');
@@ -212,14 +212,14 @@ export class AuthService {
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     // Update password and clear reset token
-    // await this.prisma.user.update({
-    //   where: { id: user.id },
-    //   data: {
-    //     password: hashedPassword,
-    //     resetTokenHash: null,
-    //     resetTokenExpiry: null,
-    //   },
-    // });
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: hashedPassword,
+        resetTokenHash: null,
+        resetTokenExpiry: null,
+      },
+    });
 
     return { message: 'Password reset successful' };
   }
