@@ -1,0 +1,108 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String     @id @default(uuid())
+  email            String     @unique
+  password         String
+  name             String?
+  username         String?    @unique    
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+  refreshTokenHash String?
+  role             Role       @default(USER)
+  portfolio        Portfolio?
+  feedbacks        Feedback[]
+  resetTokenHash   String?
+  resetTokenExpiry DateTime?
+}
+
+model Portfolio {
+  id           String          @id @default(uuid())
+  title        String
+  slug         String          @unique
+  isPublished  Boolean         @default(false) 
+  isPublic     Boolean         @default(false)
+  status       PortfolioStatus @default(DRAFT)
+  publishedAt  DateTime?
+  theme        String          @default("default")
+  themeConfig  Json?
+  userId       String          @unique
+  content      Json            @default("{}")
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  user         User            @relation(fields: [userId], references: [id])
+  
+  //Template relation
+  templateId   String?         @default("default")  //Add default value
+  template     Template?       @relation(fields: [templateId], references: [id])
+  
+  @@index([templateId])  //Add index for performance
+  @@index([slug])           // Index for fast slug lookup
+  @@index([isPublished])
+}
+
+model Template {
+  id          String      @id
+  name        String
+  description String
+  previewUrl  String
+  previewUrlDark String?
+  isPremium   Boolean     @default(false)
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())    //Add timestamps
+  updatedAt   DateTime    @updatedAt         //Add timestamps
+  
+  portfolios  Portfolio[] //Add back-relation (required by Prisma)
+  
+  @@index([isActive])     //Add index for filtering active templates
+}
+model Contact {
+  id        String        @id @default(uuid())
+  name      String
+  email     String
+  subject   String
+  message   String        @db.Text
+  status    ContactStatus @default(PENDING)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@index([createdAt])
+}
+model Feedback {
+  id        String   @id @default(uuid())
+  userId    String
+  score     Int      // NPS score 0–10
+  comment   String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([score])
+  @@index([createdAt])
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+enum PortfolioStatus {
+  DRAFT
+  PUBLISHED
+}
+enum ContactStatus {
+  PENDING
+  READ
+  REPLIED
+  ARCHIVED
+}
